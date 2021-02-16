@@ -5,30 +5,38 @@ module.exports = (io) => {
   const chat = io.of('/chat');
 
   room.on('connection', (socket) => {
-    console.log('room 네임스페이스에 접속');
+    console.log('room 입장' + socket.id);
     socket.on('disconnect', () => {
-      console.log('room 네임스페이스 접속 해제');
+      console.log('room 퇴장');
     });
   });
 
   chat.on('connection', (socket) => {
-    console.log('chat 네임스페이스에 접속');
+    console.log('chat 입장');
+    // You can use the express session in Socket with this
     const req = socket.handshake;
+    
+    // Let's extract a room ID in url and use it for join
     const { headers: { referer } } = socket.request;
     const roomId = referer
       .split('/')[referer.split('/').length - 1]
       .replace(/\?.+/, '');
     socket.join(roomId);
+
+    // Chat is server-side socket
+    // So, you can use the adapter and rooms(Map)
+    // To get values in Map, use 'get' method with a key
+    const connectedPeople = chat.adapter.rooms.get(roomId);
     socket.to(roomId).emit('join', {
       user: 'system',
-      chat: `${req.session.color}님이 입장하셨습니다.`,
+      chat: `${req.session.color}님이 입장하셨습니다. 접속인원: ${connectedPeople.size}`,
     });
 
-    socket.on('disconnect', () => {
-      console.log('chat 네임스페이스 접속 해제');
+    socket.on('disconnect', (reason) => {
+      console.log('chat 퇴장');
       socket.leave(roomId);
-      const currentRoom = socket.adapter.rooms[roomId];
-      const userCount = currentRoom ? currentRoom.length : 0;
+      const currentRoom = chat.adapter.rooms.get(roomId);
+      const userCount = currentRoom ? currentRoom.size : 0;
       if (userCount === 0) {
         axios.delete(`http://localhost:8005/room/${roomId}`)
           .then(() => {

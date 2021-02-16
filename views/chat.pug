@@ -34,6 +34,7 @@ block content
     var socket = io.connect('http://localhost:8005/chat', {
       path: '/socket.io'
     });
+
     socket.on('join', function (data) {
       var div = document.createElement('div');
       div.classList.add('system');
@@ -42,6 +43,7 @@ block content
       div.appendChild(chat);
       document.querySelector('#chat-list').appendChild(div);
     });
+
     socket.on('exit', function (data) {
       var div = document.createElement('div');
       div.classList.add('system');
@@ -50,6 +52,7 @@ block content
       div.appendChild(chat);
       document.querySelector('#chat-list').appendChild(div);
     });
+
     socket.on('chat', function (data) {
       var div = document.createElement('div');
       if (data.user === '#{user}') {
@@ -72,6 +75,7 @@ block content
       div.style.color = data.user;
       document.querySelector('#chat-list').appendChild(div);
     });
+
     document.querySelector('#chat-form').addEventListener('submit', function (e) {
       e.preventDefault();
       if (e.target.chat.value) {
@@ -85,13 +89,13 @@ block content
         };
         xhr.open('POST', '/room/#{room._id}/chat');
         xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.send(JSON.stringify({ chat: this.chat.value }));
+        xhr.send(JSON.stringify({chat: this.chat.value}))
       }
     });
+
     document.querySelector('#gif').addEventListener('change', function (e) {
       var formData = new FormData();
       var xhr = new XMLHttpRequest();
-      console.log(e.target.files);
       formData.append('gif', e.target.files[0]);
       xhr.onload = function () {
         if (xhr.status === 200) {
@@ -103,3 +107,5 @@ block content
       xhr.open('POST', '/room/#{room._id}/gif');
       xhr.send(formData);
     });
+
+  
